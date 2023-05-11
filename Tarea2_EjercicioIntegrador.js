@@ -81,9 +81,7 @@ class Carrito {
      * función que agrega @{cantidad} de productos con @{sku} al carrito
      */
 
-    // a) Al ejecutar agregarProducto 2 veces con los mismos valores debería agregar 1 solo producto con la suma de las cantidades.   LISTO 
-    // b) Al ejecutar agregarProducto debería actualizar la lista de categorías solamente si la categoría no estaba en la lista. LISTO
-    // c) Si intento agregar un producto que no existe debería mostrar un mensaje de error. LISTO
+
     
     async agregarProducto(sku, cantidad) {
 
@@ -94,11 +92,16 @@ class Carrito {
         try{
             const producto = await findProductBySku(sku);
             console.log("Producto encontrado", producto);
+
+            //Controlo si ya esta en el carrito el producto
             
             const indexProdExistente = this.productos.findIndex(el => el.sku === producto.sku);
             
             if(indexProdExistente >=0){
+                //Si existe le sumo la cantidad al mismo producto y actualizo el precio
+                
                 this.productos[indexProdExistente].cantidad += cantidad;
+                
                 this.precioTotal += producto.precio * cantidad;
             }
             else{
@@ -107,7 +110,9 @@ class Carrito {
                 const nuevoProducto = new ProductoEnCarrito(sku, producto.nombre, cantidad);
                 this.productos.push(nuevoProducto);
                 this.precioTotal = this.precioTotal + (producto.precio * cantidad);
-    
+                
+                //Si no existe la categoria la agrego
+
                 if(!this.categorias.includes(producto.categoria)){
     
                     this.categorias.push(producto.categoria);
@@ -115,6 +120,7 @@ class Carrito {
             }
         }
         catch(error){
+            //En caso de no encontrarse el producto muestro el error
             
             console.error(error);
         }
@@ -150,6 +156,8 @@ function findProductBySku(sku) {
 }
 
 const carrito = new Carrito();
+
+//Realizando pruebas
 carrito.agregarProducto('WE328NJ', 2);
 carrito.agregarProducto('FN312PPE', 2);
 carrito.agregarProducto('PV332MJ', 2);
