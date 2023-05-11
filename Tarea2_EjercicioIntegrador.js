@@ -99,13 +99,29 @@ class Carrito {
             
             if(indexProdExistente >=0){
                 //Si existe le sumo la cantidad al mismo producto y actualizo el precio
+
+                /* No se si es necesario validad el stock, por las dudas lo hice y lo dejo comentado
+
+                
+                 if((this.productos[indexProdExistente].cantidad+cantidad)>producto.stock){
+
+                     throw ("La cantidad seleccionada es mayor al stock disponible");
+                 } */
+                
                 
                 this.productos[indexProdExistente].cantidad += cantidad;
-                
+
+
                 this.precioTotal += producto.precio * cantidad;
             }
             else{
-    
+                /* No se si es necesario validad el stock, por las dudas lo hice y lo dejo comentado
+
+                if(cantidad>producto.stock){
+
+                    throw ("La cantidad seleccionada es mayor al stock disponible");
+                }*/
+                
                 // Creo un producto nuevo
                 const nuevoProducto = new ProductoEnCarrito(sku, producto.nombre, cantidad);
                 this.productos.push(nuevoProducto);
@@ -121,10 +137,74 @@ class Carrito {
         }
         catch(error){
             //En caso de no encontrarse el producto muestro el error
-            
+
             console.error(error);
         }
     }
+
+   
+
+    async eliminarProducto(sku, cantidad){
+        
+        const producto = await findProductBySku(sku);
+        
+        return new Promise((resolve, reject) => {
+
+           
+                //Valida la cantidad
+
+               if(cantidad<1) reject("La cantidad a eliminar debe ser mayor a 0");
+
+               //Se comprueba que el producto exista en el carrito
+
+                const indexProdCarrito = this.productos.findIndex(el => el.sku === sku);
+    
+                if(indexProdCarrito>=0){
+                    
+                    const productoEnCarrito = this.productos[indexProdCarrito];
+                    
+                    //Si la cantidad a eliminar es menor que la cantidad total del producto en el carrito se resta.
+                    //Y se actualiza el precio
+
+                    if(cantidad < productoEnCarrito.cantidad){
+    
+                       this.productos[indexProdCarrito].cantidad -= cantidad;
+                       
+                       this.precioTotal -= producto.precio * cantidad;
+                       
+                        let strUnidad = "unidades";
+
+                        if(cantidad===1) strUnidad = "unidad";
+
+                       resolve(`Se eliminó con éxito ${cantidad} ${strUnidad} del producto '${productoEnCarrito.nombre}' SKU: ${sku} `);
+                    }
+                    else{
+
+                        //Si la cantidad es mayor o igual, se elimina el producto y se actualiza el precio
+                        this.productos.splice(indexProdCarrito,1);
+                        this.precioTotal -= producto.precio * productoEnCarrito.cantidad;
+                        
+                        resolve(`Se ha eliminado con éxito el producto "${productoEnCarrito.nombre}" SKU: ${sku} del carrito. `)                        
+                    }
+    
+                }
+                else{
+                    //Si el producto no se encuentra en el carrito se retorna un error
+
+                   reject(`No existe un producto con sku "${sku}" en el carrito`);
+                }
+    
+    
+           });
+                
+
+
+
+    }
+
+
+
+
 }
 
 // Cada producto que se agrega al carrito es creado con esta clase
@@ -155,37 +235,43 @@ function findProductBySku(sku) {
     });
 }
 
-const carrito = new Carrito();
 
-//Realizando pruebas
-carrito.agregarProducto('WE328NJ', 2);
-carrito.agregarProducto('FN312PPE', 2);
-carrito.agregarProducto('PV332MJ', 2);
-carrito.agregarProducto('XX92LKI', 2);
-carrito.agregarProducto('XX92LKI', 2);
-carrito.agregarProducto('WE328NJ', 10);
-carrito.agregarProducto('PV332MJ', 10);
-carrito.agregarProducto('RT324GD',10);
-carrito.agregarProducto('OL883YE', 10);
-carrito.agregarProducto('UI999TY',10);
-carrito.agregarProducto('KS944RUR',10);
-carrito.agregarProducto('KS944RUR',10);
-carrito.agregarProducto('OL883YE', 10);
 
-//Códigos Productos
-//'FN312PPE'
-//'PV332MJ'
-//'XX92LKI'
-//'UI999TY'
-//'RT324GD'
-//'OL883YE'
-//'WE328NJ'
 
-//Funcion agregada para hacer las pruebas
-function mostrarCarrito(){
-    setTimeout(() => {
-        console.log(carrito)
-    }, 1500);
+
+
+
+async function main(){
+
+    const carrito = new Carrito();
+    
+    //Realizando pruebas
+    await carrito.agregarProducto('WE328NJ', 2);
+    
+    await carrito.agregarProducto('WE328NJ', 10);
+    
+    await carrito.agregarProducto('KS944RUR',10);
+    
+    await carrito.agregarProducto('OL883YE', 10);
+    
+    console.log(carrito); //En este punto ya se descuenta la cantidad del producto que se va a eliminar en la linea siguiente, creo que es 
+                          //porque no se pasa el valor, sino la referencia del array(Porque en el precio total, se descuenta despues de ejecutar el metodo
+                          //para eliminar los productos), pero nose como solucionarlo.
+                          
+    
+    await carrito.eliminarProducto('KS944RUR',1)
+    .then(res => console.log(res))
+    .catch(error => console.error(error));
+
+    console.log(carrito);
 }
 
-mostrarCarrito();
+main();
+
+
+
+
+
+
+
+
