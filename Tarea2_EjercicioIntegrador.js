@@ -80,19 +80,44 @@ class Carrito {
     /**
      * función que agrega @{cantidad} de productos con @{sku} al carrito
      */
+
+    // a) Al ejecutar agregarProducto 2 veces con los mismos valores debería agregar 1 solo producto con la suma de las cantidades.   LISTO 
+    // b) Al ejecutar agregarProducto debería actualizar la lista de categorías solamente si la categoría no estaba en la lista. LISTO
+    // c) Si intento agregar un producto que no existe debería mostrar un mensaje de error. LISTO
+    
     async agregarProducto(sku, cantidad) {
+
         console.log(`Agregando ${cantidad} ${sku}`);
-
+        
         // Busco el producto en la "base de datos"
-        const producto = await findProductBySku(sku);
-
-        console.log("Producto encontrado", producto);
-
-        // Creo un producto nuevo
-        const nuevoProducto = new ProductoEnCarrito(sku, producto.nombre, cantidad);
-        this.productos.push(nuevoProducto);
-        this.precioTotal = this.precioTotal + (producto.precio * cantidad);
-        this.categorias.push(producto.categoria);
+        
+        try{
+            const producto = await findProductBySku(sku);
+            console.log("Producto encontrado", producto);
+            
+            const indexProdExistente = this.productos.findIndex(el => el.sku === producto.sku);
+            
+            if(indexProdExistente >=0){
+                this.productos[indexProdExistente].cantidad += cantidad;
+                this.precioTotal += producto.precio * cantidad;
+            }
+            else{
+    
+                // Creo un producto nuevo
+                const nuevoProducto = new ProductoEnCarrito(sku, producto.nombre, cantidad);
+                this.productos.push(nuevoProducto);
+                this.precioTotal = this.precioTotal + (producto.precio * cantidad);
+    
+                if(!this.categorias.includes(producto.categoria)){
+    
+                    this.categorias.push(producto.categoria);
+                }
+            }
+        }
+        catch(error){
+            
+            console.error(error);
+        }
     }
 }
 
@@ -126,3 +151,33 @@ function findProductBySku(sku) {
 
 const carrito = new Carrito();
 carrito.agregarProducto('WE328NJ', 2);
+carrito.agregarProducto('FN312PPE', 2);
+carrito.agregarProducto('PV332MJ', 2);
+carrito.agregarProducto('XX92LKI', 2);
+carrito.agregarProducto('XX92LKI', 2);
+carrito.agregarProducto('WE328NJ', 10);
+carrito.agregarProducto('PV332MJ', 10);
+carrito.agregarProducto('RT324GD',10);
+carrito.agregarProducto('OL883YE', 10);
+carrito.agregarProducto('UI999TY',10);
+carrito.agregarProducto('KS944RUR',10);
+carrito.agregarProducto('KS944RUR',10);
+carrito.agregarProducto('OL883YE', 10);
+
+//Códigos Productos
+//'FN312PPE'
+//'PV332MJ'
+//'XX92LKI'
+//'UI999TY'
+//'RT324GD'
+//'OL883YE'
+//'WE328NJ'
+
+//Funcion agregada para hacer las pruebas
+function mostrarCarrito(){
+    setTimeout(() => {
+        console.log(carrito)
+    }, 1500);
+}
+
+mostrarCarrito();
