@@ -254,9 +254,7 @@ async function main(){
     
     await carrito.agregarProducto('OL883YE', 10);
     
-    console.log(carrito); //En este punto ya se descuenta la cantidad del producto que se va a eliminar en la linea siguiente, creo que es 
-                          //porque no se pasa el valor, sino la referencia del array(Porque en el precio total, se descuenta despues de ejecutar el metodo
-                          //para eliminar los productos), pero nose como solucionarlo.
+    console.log(carrito); 
                           
     
     await carrito.eliminarProducto('KS944RUR',1)
